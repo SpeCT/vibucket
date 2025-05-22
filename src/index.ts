@@ -5,7 +5,10 @@ main().catch(console.error);
 
 
 async function main() {
-  const server = createMCPServer();
+  const username = process.env.BITBUCKET_USERNAME!;
+  const password = process.env.BITBUCKET_PASSWORD!;
+  
+  const server = createMCPServer({ username, password });
   const transport = new StdioServerTransport();
   await server.connect(transport);
   

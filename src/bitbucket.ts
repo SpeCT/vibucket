@@ -252,12 +252,13 @@ export class BitbucketClient {
   }
   
   /**
-   * Gets repositories for the authenticated user
+   * Gets repositories for the authenticated user or for a specific workspace
    * 
    * @param options Query parameters
    * @returns Paginated list of repositories
    */
   async getRepositories(options: { 
+    workspace?: string,
     role?: 'owner' | 'admin' | 'contributor' | 'member', 
     page?: number, 
     pagelen?: number 
@@ -269,7 +270,11 @@ export class BitbucketClient {
     if (options.pagelen) params.append('pagelen', options.pagelen.toString());
     
     const queryString = params.toString() ? `?${params.toString()}` : '';
-    return this.request<PaginatedResponse<Repository>>(`/repositories${queryString}`);
+    const endpoint = options.workspace 
+      ? `/repositories/${options.workspace}${queryString}`
+      : `/repositories${queryString}`;
+      
+    return this.request<PaginatedResponse<Repository>>(endpoint);
   }
   
   /**

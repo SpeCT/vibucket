@@ -1,4 +1,4 @@
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import BitbucketClient from "./bitbucket";
 
@@ -6,7 +6,7 @@ import BitbucketClient from "./bitbucket";
  * Start an MCP Server that exposes Bitbucket API tools
  */
 export function createMCPServer(auth: { username: string; password: string }) {
-  const server = new Server(
+  const server = new McpServer(
     {
       name: "bitbucket-mcp-server",
       version: "1.0.0",
@@ -37,10 +37,12 @@ export function createMCPServer(auth: { username: string; password: string }) {
   const client = new BitbucketClient(auth);
 
   // Register request handlers with inline schemas
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'getRepositories',
+    ({
       method: z.literal("bitbucket/getRepositories"),
       params: z.object({
+        workspace: z.string().optional(),
         role: z.enum(["owner", "admin", "contributor", "member"]).optional(),
         page: z.number().optional(),
         pagelen: z.number().optional(),
@@ -48,16 +50,25 @@ export function createMCPServer(auth: { username: string; password: string }) {
     }), 
     async (request) => {
       const result = await client.getRepositories({
+        workspace: request.params.workspace,
         role: request.params.role,
         page: request.params.page,
         pagelen: request.params.pagelen,
       });
-      return { result };
+
+      const output = result.values.map((repo) => ({
+        name: repo.name,
+        full_name: repo.full_name,
+        description: repo.description,
+        href: repo.links.html.href,
+      }));
+      return { content: [{ type: "text", text: JSON.stringify(output) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'getRepository',
+    ({
       method: z.literal("bitbucket/getRepository"),
       params: z.object({
         workspace: z.string(),
@@ -69,12 +80,13 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.workspace,
         request.params.repoSlug
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'getPipelines',
+    ({
       method: z.literal("bitbucket/getPipelines"),
       params: z.object({
         workspace: z.string(),
@@ -94,12 +106,13 @@ export function createMCPServer(auth: { username: string; password: string }) {
           pagelen: request.params.pagelen,
         }
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'getPipeline',
+    ({
       method: z.literal("bitbucket/getPipeline"),
       params: z.object({
         workspace: z.string(),
@@ -113,12 +126,13 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.pipelineUuid
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'getPipelineSteps',
+    ({
       method: z.literal("bitbucket/getPipelineSteps"),
       params: z.object({
         workspace: z.string(),
@@ -132,13 +146,14 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.pipelineUuid
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
   // Pull request handlers
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'getPullRequests',
+    ({
       method: z.literal("bitbucket/getPullRequests"),
       params: z.object({
         workspace: z.string(),
@@ -160,12 +175,13 @@ export function createMCPServer(auth: { username: string; password: string }) {
           pagelen: request.params.pagelen,
         }
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'getPullRequest',
+    ({
       method: z.literal("bitbucket/getPullRequest"),
       params: z.object({
         workspace: z.string(),
@@ -179,12 +195,13 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.pullRequestId
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'createPullRequest',
+    ({
       method: z.literal("bitbucket/createPullRequest"),
       params: z.object({
         workspace: z.string(),
@@ -222,12 +239,13 @@ export function createMCPServer(auth: { username: string; password: string }) {
         repoSlug,
         createParams
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'updatePullRequest',
+    ({
       method: z.literal("bitbucket/updatePullRequest"),
       params: z.object({
         workspace: z.string(),
@@ -251,12 +269,13 @@ export function createMCPServer(auth: { username: string; password: string }) {
         pullRequestId,
         updateParams
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'mergePullRequest',
+    ({
       method: z.literal("bitbucket/mergePullRequest"),
       params: z.object({
         workspace: z.string(),
@@ -275,12 +294,13 @@ export function createMCPServer(auth: { username: string; password: string }) {
         pullRequestId,
         mergeParams
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
 
-  server.setRequestHandler(
-    z.object({
+  server.tool(
+    'declinePullRequest',
+    ({
       method: z.literal("bitbucket/declinePullRequest"),
       params: z.object({
         workspace: z.string(),
@@ -294,7 +314,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.pullRequestId
       );
-      return { result };
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
   );
   
