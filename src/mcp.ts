@@ -27,6 +27,8 @@ export function createMCPServer(auth: { username: string; password: string }) {
             "bitbucket/updatePullRequest",
             "bitbucket/mergePullRequest",
             "bitbucket/declinePullRequest",
+            // Repository access methods
+            "bitbucket/grantRepositoryAccess",
           ],
         },
       },
@@ -313,6 +315,29 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.workspace,
         request.params.repoSlug,
         request.params.pullRequestId
+      );
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    }
+  );
+  
+  // Repository access handler
+  server.tool(
+    'grantRepositoryAccess',
+    ({
+      method: z.literal("bitbucket/grantRepositoryAccess"),
+      params: z.object({
+        workspace: z.string(),
+        repoSlug: z.string(),
+        userAccount: z.string(),
+        permission: z.enum(["read", "write", "admin"]),
+      }),
+    }),
+    async (request) => {
+      const result = await client.grantRepositoryAccess(
+        request.params.workspace,
+        request.params.repoSlug,
+        request.params.userAccount,
+        request.params.permission
       );
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }

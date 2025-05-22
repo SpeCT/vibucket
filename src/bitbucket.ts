@@ -188,6 +188,28 @@ export interface MergePullRequestParams {
   close_source_branch?: boolean;
 }
 
+// Repository access types
+export type RepositoryPermission = 'read' | 'write' | 'admin';
+
+export interface RepositoryAccessResponse {
+  type: string;
+  permission: RepositoryPermission;
+  user: {
+    type: string;
+    display_name: string;
+    uuid: string;
+    account_id?: string;
+    nickname?: string;
+    links?: Record<string, any>;
+  };
+  repository?: {
+    type: string;
+    name: string;
+    full_name: string;
+    uuid: string;
+  };
+}
+
 /**
  * Bitbucket API client
  */
@@ -481,6 +503,30 @@ export class BitbucketClient {
       `/repositories/${workspace}/${repoSlug}/pullrequests/${pullRequestId}/decline`,
       {
         method: 'POST'
+      }
+    );
+  }
+
+  /**
+   * Grants repository access to a user
+   * 
+   * @param workspace Workspace ID (usually username or team name)
+   * @param repoSlug Repository slug
+   * @param userAccount User account name or email
+   * @param permission Permission level (read, write, admin)
+   * @returns Repository access details
+   */
+  async grantRepositoryAccess(
+    workspace: string,
+    repoSlug: string,
+    userAccount: string,
+    permission: RepositoryPermission
+  ): Promise<RepositoryAccessResponse> {
+    return this.request<RepositoryAccessResponse>(
+      `/repositories/${workspace}/${repoSlug}/permissions-config/users/${userAccount}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify({ permission })
       }
     );
   }
