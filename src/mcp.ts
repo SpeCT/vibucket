@@ -29,6 +29,8 @@ export function createMCPServer(auth: { username: string; password: string }) {
             "bitbucket/declinePullRequest",
             // Repository access methods
             "bitbucket/grantRepositoryAccess",
+            // Workspace methods
+            "bitbucket/getWorkspaceMembers",
           ],
         },
       },
@@ -338,6 +340,31 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.userAccount,
         request.params.permission
+      );
+      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    }
+  );
+  
+  // Workspace members handler
+  server.tool(
+    'getWorkspaceMembers',
+    ({
+      method: z.literal("bitbucket/getWorkspaceMembers"),
+      params: z.object({
+        workspace: z.string(),
+        q: z.string().optional(),
+        page: z.number().optional(),
+        pagelen: z.number().optional(),
+      }),
+    }),
+    async (request) => {
+      const result = await client.getWorkspaceMembers(
+        request.params.workspace,
+        {
+          q: request.params.q,
+          page: request.params.page,
+          pagelen: request.params.pagelen,
+        }
       );
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }

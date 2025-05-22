@@ -210,6 +210,26 @@ export interface RepositoryAccessResponse {
   };
 }
 
+export interface WorkspaceMember {
+  type: string;
+  user: {
+    type: string;
+    display_name: string;
+    uuid: string;
+    account_id?: string;
+    nickname?: string;
+    email?: string;
+    links?: Record<string, any>;
+  };
+  workspace: {
+    type: string;
+    name: string;
+    slug: string;
+    uuid: string;
+  };
+  links?: Record<string, any>;
+}
+
 /**
  * Bitbucket API client
  */
@@ -528,6 +548,33 @@ export class BitbucketClient {
         method: 'PUT',
         body: JSON.stringify({ permission })
       }
+    );
+  }
+
+  /**
+   * Lists all members of a workspace
+   * 
+   * @param workspace Workspace ID
+   * @param options Query parameters
+   * @returns Paginated list of workspace members
+   */
+  async getWorkspaceMembers(
+    workspace: string,
+    options: {
+      q?: string,
+      page?: number,
+      pagelen?: number
+    } = {}
+  ): Promise<PaginatedResponse<WorkspaceMember>> {
+    const params = new URLSearchParams();
+    
+    if (options.q) params.append('q', options.q);
+    if (options.page) params.append('page', options.page.toString());
+    if (options.pagelen) params.append('pagelen', options.pagelen.toString());
+    
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    return this.request<PaginatedResponse<WorkspaceMember>>(
+      `/workspaces/${workspace}/members${queryString}`
     );
   }
 }
