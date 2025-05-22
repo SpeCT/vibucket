@@ -2,11 +2,10 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { z } from "zod";
 import BitbucketClient from "./bitbucket";
 
-
 /**
  * Start an MCP Server that exposes Bitbucket API tools
  */
-export function createMCPServer() {
+export function createMCPServer(auth: { username: string; password: string }) {
   const server = new Server(
     {
       name: "bitbucket-mcp-server",
@@ -34,22 +33,20 @@ export function createMCPServer() {
     }
   );
 
+  // Create a BitbucketClient instance with the provided auth
+  const client = new BitbucketClient(auth);
+
   // Register request handlers with inline schemas
   server.setRequestHandler(
     z.object({
       method: z.literal("bitbucket/getRepositories"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         role: z.enum(["owner", "admin", "contributor", "member"]).optional(),
         page: z.number().optional(),
         pagelen: z.number().optional(),
       }),
     }), 
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
       const result = await client.getRepositories({
         role: request.params.role,
         page: request.params.page,
@@ -63,16 +60,11 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/getRepository"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
       const result = await client.getRepository(
         request.params.workspace,
         request.params.repoSlug
@@ -85,10 +77,6 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/getPipelines"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         sort: z.string().optional(),
@@ -97,7 +85,6 @@ export function createMCPServer() {
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
       const result = await client.getPipelines(
         request.params.workspace,
         request.params.repoSlug,
@@ -115,17 +102,12 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/getPipeline"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         pipelineUuid: z.string(),
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
       const result = await client.getPipeline(
         request.params.workspace,
         request.params.repoSlug,
@@ -139,17 +121,12 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/getPipelineSteps"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         pipelineUuid: z.string(),
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
       const result = await client.getPipelineSteps(
         request.params.workspace,
         request.params.repoSlug,
@@ -164,10 +141,6 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/getPullRequests"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         state: z.enum(["OPEN", "MERGED", "DECLINED", "SUPERSEDED"]).optional(),
@@ -177,7 +150,6 @@ export function createMCPServer() {
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
       const result = await client.getPullRequests(
         request.params.workspace,
         request.params.repoSlug,
@@ -196,17 +168,12 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/getPullRequest"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         pullRequestId: z.number(),
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
       const result = await client.getPullRequest(
         request.params.workspace,
         request.params.repoSlug,
@@ -220,10 +187,6 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/createPullRequest"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         title: z.string(),
@@ -253,8 +216,7 @@ export function createMCPServer() {
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
-      const { workspace, repoSlug, auth, ...createParams } = request.params;
+      const { workspace, repoSlug, ...createParams } = request.params;
       const result = await client.createPullRequest(
         workspace,
         repoSlug,
@@ -268,10 +230,6 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/updatePullRequest"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         pullRequestId: z.number(),
@@ -286,8 +244,7 @@ export function createMCPServer() {
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
-      const { workspace, repoSlug, pullRequestId, auth, ...updateParams } = request.params;
+      const { workspace, repoSlug, pullRequestId, ...updateParams } = request.params;
       const result = await client.updatePullRequest(
         workspace,
         repoSlug,
@@ -302,10 +259,6 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/mergePullRequest"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         pullRequestId: z.number(),
@@ -315,8 +268,7 @@ export function createMCPServer() {
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
-      const { workspace, repoSlug, pullRequestId, auth, ...mergeParams } = request.params;
+      const { workspace, repoSlug, pullRequestId, ...mergeParams } = request.params;
       const result = await client.mergePullRequest(
         workspace,
         repoSlug,
@@ -331,17 +283,12 @@ export function createMCPServer() {
     z.object({
       method: z.literal("bitbucket/declinePullRequest"),
       params: z.object({
-        auth: z.object({
-          username: z.string(),
-          password: z.string(),
-        }),
         workspace: z.string(),
         repoSlug: z.string(),
         pullRequestId: z.number(),
       }),
     }),
     async (request) => {
-      const client = new BitbucketClient(request.params.auth);
       const result = await client.declinePullRequest(
         request.params.workspace,
         request.params.repoSlug,
