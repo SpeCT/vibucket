@@ -24,7 +24,7 @@ async function main() {
 
   // Connect to the Bitbucket MCP server
   const transport = new StdioClientTransport({
-    command: "npx ts-node src/mcp/bitbucket-server.ts",
+    command: "npx ts-node src/index.ts",
   });
 
   try {
@@ -36,10 +36,6 @@ async function main() {
       {
         method: "bitbucket/getRepositories",
         params: {
-          auth: {
-            username: "your-username",
-            password: "your-app-password"
-          },
           role: "owner",
           pagelen: 10
         }
@@ -61,10 +57,6 @@ async function main() {
         {
           method: "bitbucket/getRepository",
           params: {
-            auth: {
-              username: "your-username",
-              password: "your-app-password"
-            },
             workspace,
             repoSlug
           }
@@ -86,10 +78,6 @@ async function main() {
         {
           method: "bitbucket/getPullRequests",
           params: {
-            auth: {
-              username: "your-username",
-              password: "your-app-password"
-            },
             workspace,
             repoSlug,
             state: "OPEN"
@@ -117,10 +105,6 @@ async function main() {
         {
           method: "bitbucket/createPullRequest",
           params: {
-            auth: {
-              username: "your-username",
-              password: "your-app-password"
-            },
             workspace,
             repoSlug,
             title: "Example PR from MCP client",
@@ -154,10 +138,6 @@ async function main() {
           {
             method: "bitbucket/getPullRequest",
             params: {
-              auth: {
-                username: "your-username",
-                password: "your-app-password"
-              },
               workspace,
               repoSlug,
               pullRequestId

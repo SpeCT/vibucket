@@ -44,12 +44,28 @@ This MCP server exposes the following Bitbucket API operations as tools:
    npm install -g typescript ts-node
    ```
 
+3. Set up environment variables:
+   Create a `.env` file in the root directory with your Bitbucket credentials:
+   ```bash
+   BITBUCKET_USERNAME=your-username
+   BITBUCKET_PASSWORD=your-app-password
+   ```
+   
+   **Note**: For Bitbucket Cloud, you need to use an "App Password" rather than your account password. Create one at:
+   `https://bitbucket.org/account/settings/app-passwords/`
+
 ## Running the Server
 
 Start the Bitbucket MCP server:
 
 ```bash
-npx ts-node src/mcp.ts
+npx ts-node src/index.ts
+```
+
+Or with Bun:
+
+```bash
+bun run dev
 ```
 
 The server runs using a stdio transport, which means it expects to receive and send messages through standard input/output channels.
@@ -59,10 +75,11 @@ The server runs using a stdio transport, which means it expects to receive and s
 To use this server from a client, see the example in `example-client.ts`. You can run the example with:
 
 ```bash
-npx ts-node src/mcp/example-client.ts
+# First start the server in the background, then run the client
+npx ts-node src/example-client.ts
 ```
 
-Remember to update the authentication credentials in the example client with your Bitbucket username and app password.
+Make sure your environment variables are set before running the client.
 
 ## Example: Working with Pull Requests
 
@@ -89,10 +106,6 @@ const prResponse = await client.request(
   {
     method: "bitbucket/getPullRequests",
     params: {
-      auth: {
-        username: "your-username",
-        password: "your-app-password"
-      },
       workspace: "your-workspace",
       repoSlug: "your-repo",
       state: "OPEN"
@@ -108,10 +121,6 @@ const newPrResponse = await client.request(
   {
     method: "bitbucket/createPullRequest",
     params: {
-      auth: {
-        username: "your-username",
-        password: "your-app-password"
-      },
       workspace: "your-workspace",
       repoSlug: "your-repo",
       title: "My new pull request",
