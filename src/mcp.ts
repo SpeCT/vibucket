@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { stringify as yamlStringify, type ToStringOptions } from "yaml";
 import { z } from "zod";
 import BitbucketClient from "./bitbucket";
 
@@ -40,6 +41,14 @@ export function createMCPServer(auth: { username: string; password: string }) {
   // Create a BitbucketClient instance with the provided auth
   const client = new BitbucketClient(auth);
 
+  // Configure YAML stringify options for optimal performance
+  const yamlOptions: ToStringOptions = {
+    indent: 2,
+    lineWidth: 300,
+    defaultStringType: "QUOTE_SINGLE" as const,
+    defaultKeyType: "PLAIN" as const,
+  };
+
   // Register request handlers with inline schemas
   server.tool(
     'getRepositories',
@@ -66,7 +75,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         description: repo.description,
         href: repo.links.html.href,
       }));
-      return { content: [{ type: "text", text: JSON.stringify(output) }] };
+      return { content: [{ type: "text", text: yamlStringify(output, yamlOptions) }] };
     }
   );
 
@@ -84,7 +93,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.workspace,
         request.params.repoSlug
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -110,7 +119,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
           pagelen: request.params.pagelen,
         }
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -130,7 +139,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.pipelineUuid
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -150,7 +159,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.pipelineUuid
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -179,7 +188,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
           pagelen: request.params.pagelen,
         }
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -199,7 +208,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.pullRequestId
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -243,7 +252,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         repoSlug,
         createParams
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -273,7 +282,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         pullRequestId,
         updateParams
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -298,7 +307,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         pullRequestId,
         mergeParams
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
 
@@ -318,7 +327,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.repoSlug,
         request.params.pullRequestId
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
   
@@ -341,7 +350,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
         request.params.userAccount,
         request.params.permission
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
   
@@ -366,7 +375,7 @@ export function createMCPServer(auth: { username: string; password: string }) {
           pagelen: request.params.pagelen,
         }
       );
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      return { content: [{ type: "text", text: yamlStringify(result, yamlOptions) }] };
     }
   );
   
